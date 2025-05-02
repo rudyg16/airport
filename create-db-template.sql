@@ -1,65 +1,70 @@
+
+DROP DATABASE IF EXISTS airportDB;
 CREATE DATABASE airportDB;
-
 USE airportDB;
-CREATE TABLE airline(
-    airline_name VARCHAR(50) NOT NULL,
 
-    PRIMARY KEY(airline_name),UNIQUE(airline_name)
+--Run in order
+
+/* Users (must come early so passenger can FK to it) */
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL
 );
-CREATE TABLE airplane(
-    airplane_id INT NOT NULL AUTO_INCREMENT,
-    model VARCHAR(60) NOT NULL,
-    capacity INT NOT NULL,
-    airline_name VARCHAR(50) NOT NULL,
 
-    PRIMARY KEY (airplane_id), UNIQUE(airplane_id), 
+/* Airlines */
+CREATE TABLE airline ( airline_name VARCHAR(50) PRIMARY KEY );
+
+CREATE TABLE model(
+    model_name VARCHAR(60) NOT NULL PRIMARY KEY,
+    capacity INT NOT NULL
+);
+/* Airplanes  */
+CREATE TABLE airplane (
+    airplane_id INT AUTO_INCREMENT PRIMARY KEY,
+    model_name VARCHAR(60) NOT NULL,
+    airline_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY(model_name) REFERENCES model(model_name),
     FOREIGN KEY (airline_name) REFERENCES airline(airline_name)
 );
+DROP TABLE airplane;
 
-CREATE TABLE terminal(
-    terminal_letter VARCHAR(1) NOT NULL,
-    PRIMARY KEY(terminal_letter),UNIQUE(terminal_letter)
-);
+/* Terminals */
+CREATE TABLE terminal ( terminal_letter CHAR(1) PRIMARY KEY );
 
-CREATE TABLE gate(
+/* Gates  – composite PK lets the same gate number exist in different terminals */
+CREATE TABLE gate (
     gate_num INT NOT NULL,
-    terminal_letter VARCHAR(1) NOT NULL,
-
-    PRIMARY KEY(gate_num), UNIQUE(gate_num),
-    FOREIGN KEY(terminal_letter) REFERENCES terminal(terminal_letter)    
+    terminal_letter CHAR(1) NOT NULL,
+    PRIMARY KEY (gate_num, terminal_letter),
+    FOREIGN KEY (terminal_letter) REFERENCES terminal (terminal_letter)
 );
 
+/* Employees */
 CREATE TABLE employee (
-    employ_id INT AUTO_INCREMENT NOT NULL,
-    employ_ssn VARCHAR(11) NOT NULL,
+    employ_id INT AUTO_INCREMENT PRIMARY KEY,
+    employ_ssn CHAR(11) NOT NULL,
     job_role VARCHAR(60) NOT NULL,
     employ_fname VARCHAR(40) NOT NULL,
     employ_lname VARCHAR(40) NOT NULL,
     airline_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (airline_name) REFERENCES airline (airline_name)
+);
 
-    PRIMARY KEY(employ_id), UNIQUE(employ_id),
-    FOREIGN KEY(airline_name) REFERENCES airline(airline_name)
-)
-
+/* Passengers (optionally linked 1‑to‑1 with a user account) */
 CREATE TABLE passenger (
-    pass_id INT NOT NULL AUTO_INCREMENT,
+    pass_id INT AUTO_INCREMENT PRIMARY KEY,
     pass_lname VARCHAR(40),
     pass_fname VARCHAR(40),
-    pass_passportID VARCHAR(9),
+    pass_passportID CHAR(9),
     state_ID VARCHAR(12),
     pass_email VARCHAR(60),
+    user_id INT UNIQUE,
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
 
-    PRIMARY KEY(pass_id), UNIQUE(pass_id)
-)
-
-ALTER TABLE passenger
-ADD COLUMN user_id INT UNIQUE,
-ADD CONSTRAINT fk_user_passenger
-    FOREIGN KEY(user_id)
-    REFERENCES users(user_id);
-
-CREATE TABLE flight(
-    flight_num INT NOT NULL AUTO_INCREMENT,
+CREATE TABLE flight (
+    flight_num INT AUTO_INCREMENT PRIMARY KEY,
     depart_time DATETIME NOT NULL,
     arrival_time DATETIME NOT NULL,
     capacity INT NOT NULL,
@@ -67,58 +72,38 @@ CREATE TABLE flight(
     pass_email VARCHAR(60) NOT NULL,
     airline_name VARCHAR(50) NOT NULL,
     gate_num INT NOT NULL,
-    
-    PRIMARY KEY(flight_num), UNIQUE(flight_num),
-    FOREIGN KEY(airline_name) REFERENCES airline(airline_name),
-    FOREIGN KEY(gate_num) REFERENCES gate(gate_num)
-)
+    terminal_letter CHAR(1) NOT NULL,
+    arrival_city VARCHAR(50),
+    depart_city VARCHAR(50),
+    arrival_country VARCHAR(50),
+    depart_country VARCHAR(50),
+    FOREIGN KEY (airline_name) REFERENCES airline (airline_name),
+    FOREIGN KEY (gate_num, terminal_letter) REFERENCES gate (gate_num, terminal_letter)
+);
 
-ALTER TABLE flight 
-ADD COLUMN arrival_country VARCHAR(50),
-ADD COLUMN depart_country VARCHAR(50);
-ALTER TABLE flight 
-CHANGE arrival_location arrival_city VARCHAR(50),
-CHANGE depart_location depart_city VARCHAR(50);
-
-
-CREATE TABLE luggage(
-    luggage_id INT NOT NULL AUTO_INCREMENT,
+/* Luggage -- belongs to a passenger per specific flight */
+CREATE TABLE luggage (
+    luggage_id INT AUTO_INCREMENT PRIMARY KEY,
     pass_id INT NOT NULL,
     flight_num INT NOT NULL,
-    
-    PRIMARY KEY(luggage_id), UNIQUE(luggage_id),
-    FOREIGN KEY(pass_id) REFERENCES passenger(pass_id),
-    FOREIGN KEY(flight_num) REFERENCES flight(flight_num)
-)
+    FOREIGN KEY (pass_id) REFERENCES passenger (pass_id),
+    FOREIGN KEY (flight_num) REFERENCES flight (flight_num)
+);
 
-CREATE TABLE ticket(
-    ticket_id INT NOT NULL AUTO_INCREMENT,
+/* Tickets */
+CREATE TABLE ticket (
+    ticket_id INT AUTO_INCREMENT PRIMARY KEY,
     seat_num SMALLINT NOT NULL,
     flight_num INT NOT NULL,
-    
-    PRIMARY KEY(ticket_id),UNIQUE(ticket_id),
-    UNIQUE(flight_num,seat_num),
-    FOREIGN KEY(flight_num) REFERENCES flight(flight_num)
-)
+    UNIQUE (flight_num, seat_num),
+    FOREIGN KEY (flight_num) REFERENCES flight (flight_num)
+);
 
-CREATE TABLE crew(
+/* Flight‑crew assignment for M-to-M relationship */
+CREATE TABLE crew (
     flight_num INT NOT NULL,
     employ_id INT NOT NULL,
-
-    PRIMARY KEY (flight_num,employ_id),
-    FOREIGN KEY(flight_num) REFERENCES flight(flight_num),
-    FOREIGN KEY(employ_id) REFERENCES employee(employ_id)
-)
-
-CREATE TABLE users(
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(50) NOT NULL
-)
-
-ALTER TABLE users
-    RENAME COLUMN id TO user_id;
-
-
-
-
+    PRIMARY KEY (flight_num, employ_id),
+    FOREIGN KEY (flight_num) REFERENCES flight (flight_num),
+    FOREIGN KEY (employ_id) REFERENCES employee (employ_id)
+);
