@@ -52,6 +52,12 @@ CREATE TABLE passenger (
     PRIMARY KEY(pass_id), UNIQUE(pass_id)
 )
 
+ALTER TABLE passenger
+ADD COLUMN user_id INT UNIQUE,
+ADD CONSTRAINT fk_user_passenger
+    FOREIGN KEY(user_id)
+    REFERENCES users(user_id);
+
 CREATE TABLE flight(
     flight_num INT NOT NULL AUTO_INCREMENT,
     depart_time DATETIME NOT NULL,
@@ -103,6 +109,16 @@ CREATE TABLE crew(
     FOREIGN KEY(flight_num) REFERENCES flight(flight_num),
     FOREIGN KEY(employ_id) REFERENCES employee(employ_id)
 )
+
+CREATE TABLE users(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL
+)
+
+ALTER TABLE users
+    RENAME COLUMN id TO user_id;
+
 
 
 
