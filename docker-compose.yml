@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./airportFrontEnd
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./airportFrontEnd:/app
+      - /app/node_modules
+    working_dir: /app
+    command: npm run dev -- --host
+
+  backend:
+    build: ./airportBackEnd
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./airportBackEnd:/app
+    working_dir: /app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
