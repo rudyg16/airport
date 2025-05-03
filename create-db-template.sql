@@ -27,7 +27,6 @@ CREATE TABLE airplane (
     FOREIGN KEY(model_name) REFERENCES model(model_name),
     FOREIGN KEY (airline_name) REFERENCES airline(airline_name)
 );
-DROP TABLE airplane;
 
 /* Terminals */
 CREATE TABLE terminal ( terminal_letter CHAR(1) PRIMARY KEY );

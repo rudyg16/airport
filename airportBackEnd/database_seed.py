@@ -2,6 +2,7 @@ import pymysql
 from dotenv import load_dotenv
 import os
 import pandas as pd
+import random
 
 # Load environment variables
 load_dotenv()
@@ -21,6 +22,7 @@ models =[
         ("Airbus A321", 185),
         ("Boeing 777-200", 300),
     ]
+job_roles =['Flight Attendant','Co-Pilot','Flight Engineer','Captain','Flight Attendant Lead']
 
 
 # === Seeder Functions ===
@@ -53,43 +55,42 @@ def seed_model(cursor):
 
 def seed_airplane(cursor):
     df = pd.read_csv('data/airplane.csv')
-    for index, row in df.iterrows():#itterrows allows iteration through each row of dataframe df
-        model = row['model_name']
+    for index, row in df.iterrows():#itterrows allows iteration through each row of dataframe df, each row accessed by index, 
+        model = row['model_name']#subset of the row
         airline=row['airline_name']
-        sql="INSERT INTO model(model_name,capacity) VALUES(%s,%s)"
-        cursor.execute(sql,(model_name,capacity,))
+        sql="INSERT INTO airplane(model_name,airline_name) VALUES(%s,%s)"
+        cursor.execute(sql,(model,airline,))
 
-# === Print Utility Functions ===
 
-def print_airlines(cursor):
-    cursor.execute("SELECT * FROM airline")
+def seed_employee(cursor):
+    df=pd.read_csv('data/employee.csv')
+    ssn_set =set()
+    for index, row in df.iterrows():
+        ssn = f"{random.randint(0,999999999)}"
+        while True:
+            formatted_ssn =f"{ssn[:3]}-{ssn[3:5]}-{ssn[5:]}"
+            if formatted_ssn not in ssn_set:
+                ssn_set.add(formatted_ssn)#add to hashmap to ensure uniqueness
+
+                job_role = row['job_role']
+                employ_fname = row['employ_fname']
+                employ_lname = row['employ_lname']
+                airline_name = row['airline_name']
+
+                sql="INSERT INTO employee(employ_ssn,job_role,employ_fname,employ_lname,airline_name) VALUES(%s,%s,%s,%s,%s)"
+                cursor.execute(sql,(formatted_ssn,job_role,employ_fname,employ_lname,airline_name))
+                break
+
+
+# === Print Utility Function ===
+
+def print_table(tablename,cursor):
+    query = f"SELECT * FROM {tablename}"
+    cursor.execute(query)
     rows = cursor.fetchall()
-    print("Inserted Airlines:")
+    print(f"Inserted {tablename}:")
     for row in rows:
         print(row)
-
-def print_terminals(cursor):
-    cursor.execute("SELECT * FROM terminal")
-    rows = cursor.fetchall()
-    print("Inserted Terminals:")
-    for row in rows:
-        print(row)
-
-def print_gates(cursor):
-    cursor.execute("SELECT * FROM gate")
-    rows = cursor.fetchall()
-    print("Inserted Gates:")
-    for row in rows:
-        print(row)
-
-def print_model(cursor):
-    cursor.execute("SELECT * FROM model")
-    rows = cursor.fetchall()
-    print("Inserted Models:")
-    for row in rows:
-        print(row)
-
-
 
 
 #run modular functions to initialize DB
@@ -105,10 +106,10 @@ def main():
 
     with connection.cursor() as cursor:
         '''
+        #table seeding is in order with respect to relationships, run individually.
         seed_airlines(cursor)
         connection.commit()
 
-        #gate is dependent on terminal so commit it before 
         seed_terminals(cursor)
         connection.commit()
 
@@ -117,13 +118,22 @@ def main():
         
         seed_model(cursor)
         connection.commit()
+
+        seed_airplane(cursor)
+        connection.commit()
+
+        seed_employee(cursor)
+        connection.commit()
         '''
+        connection.commit()
 
         # View data (optional)
-        print_airlines(cursor)
-        print_terminals(cursor)
-        print_gates(cursor)
-        print_model(cursor)
+        #print_table('terminal',cursor)
+        #print_table('gate',cursor)
+        #print_table('model',cursor)
+        #print_table('airplane',cursor)
+        print_table('employee',cursor)
+
 
     connection.close()
 
