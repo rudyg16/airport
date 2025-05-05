@@ -8,7 +8,8 @@ export default {
     extend: {
 
       colors:{//Predefine colors here 
-        airplaneBlue: "#55b2de", 
+        airplaneBlue: "#3484FD", 
+        greenBlue:"#00CEC8",
       }
     },
   },

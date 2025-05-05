@@ -58,9 +58,18 @@ CREATE TABLE passenger (
     pass_passportID CHAR(9),
     state_ID VARCHAR(12),
     pass_email VARCHAR(60),
-    user_id INT UNIQUE,
+    user_id INT ,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
+
+#ALTER TABLE passenger DROP FOREIGN KEY passenger_ibfk_1;
+#ALTER TABLE passenger DROP INDEX user_id; #remov user_id that had UNIQUE constraint 
+#ALTER TABLE passenger ADD INDEX user_id INT;
+
+#Use this to create new 1:M relationships
+#ALTER TABLE passenger
+#ADD CONSTRAINT fk_user_id
+#FOREIGN KEY(user_id) REFERENCES users(user_id);
 
 CREATE TABLE flight (
     flight_num INT AUTO_INCREMENT PRIMARY KEY,
