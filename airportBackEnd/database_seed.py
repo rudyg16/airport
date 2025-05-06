@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 import random
+import string
 
 # Load environment variables
 load_dotenv()
@@ -23,6 +24,14 @@ models =[
         ("Boeing 777-200", 300),
     ]
 job_roles =['Flight Attendant','Co-Pilot','Flight Engineer','Captain','Flight Attendant Lead']
+
+group_members = [
+    ('Ahmed','Siddiqui'),
+    ('Adrian','Aheyeu'),
+    ('Rodolfo','Gonzalez'),
+    ('Yousuf','Ismail'),
+    ('Yoel','Kidane')
+]
 
 
 # === Seeder Functions ===
@@ -81,6 +90,30 @@ def seed_employee(cursor):
                 cursor.execute(sql,(formatted_ssn,job_role,employ_fname,employ_lname,airline_name))
                 break
 
+def seed_users(cursor):
+    for username,last in group_members:
+        password ='admin'
+        sql="INSERT INTO users(username,password) VALUES(%s,%s)"
+        cursor.execute(sql,(username,password))
+
+def generate_uppercase_string(length):
+    return ''.join(random.choices(string.ascii_uppercase, k=length))
+
+def seed_passenger(cursor):
+    for user_id in range(1, 6):  # assumes users with IDs 1 to 5 exist
+        for first_name, last_name in group_members:
+            passportID = generate_uppercase_string(9)
+            stateID = generate_uppercase_string(12)
+            email = f"{first_name.lower()}@gmail.com"
+            sql = """
+                INSERT INTO passenger 
+                    (pass_lname, pass_fname, pass_passportID, state_ID, pass_email, user_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (last_name, first_name, passportID, stateID, email, user_id))
+            
+
+
 
 # === Print Utility Function ===
 
@@ -124,7 +157,11 @@ def main():
 
         seed_employee(cursor)
         connection.commit()
+        
+        seed_users(cursor)
+        connection.commit()
         '''
+        seed_passenger(cursor)
         connection.commit()
 
         # View data (optional)
@@ -132,7 +169,10 @@ def main():
         #print_table('gate',cursor)
         #print_table('model',cursor)
         #print_table('airplane',cursor)
-        print_table('employee',cursor)
+        #print_table('employee',cursor)
+        #print_table('users',cursor)
+        print_table('passenger',cursor)
+
 
 
     connection.close()
