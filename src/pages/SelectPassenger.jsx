@@ -9,16 +9,21 @@ const SelectPassenger = () => {
     { id: 1, name: "John Doe" },
     { id: 2, name: "Jane Smith" },
   ]);
-
   const [newPassenger, setNewPassenger] = useState("");
   const [selectedPassengerId, setSelectedPassengerId] = useState(null);
 
   const handleAddPassenger = () => {
     if (newPassenger.trim() === "") return;
     const newId = passengers.length + 1;
-    const updatedPassengers = [...passengers, { id: newId, name: newPassenger }];
-    setPassengers(updatedPassengers);
+    const updatedList = [...passengers, { id: newId, name: newPassenger }];
+    setPassengers(updatedList);
     setNewPassenger("");
+  };
+
+  const handleRemovePassenger = (id) => {
+    const updated = passengers.filter((p) => p.id !== id);
+    setPassengers(updated);
+    if (selectedPassengerId === id) setSelectedPassengerId(null);
   };
 
   const handleSelectPassenger = (id) => {
@@ -26,20 +31,18 @@ const SelectPassenger = () => {
   };
 
   const handleContinue = () => {
-    if (!selectedPassengerId) {
+    const passenger = passengers.find((p) => p.id === selectedPassengerId);
+    if (!passenger) {
       alert("Please select a passenger.");
       return;
     }
-
-    const selectedPassenger = passengers.find(p => p.id === selectedPassengerId);
-    localStorage.setItem("selectedPassenger", JSON.stringify(selectedPassenger));
+    localStorage.setItem("selectedPassenger", JSON.stringify(passenger));
     navigate("/baggage");
   };
 
   return (
     <div className="select-passenger-container">
       <h2>Select a Passenger</h2>
-
       <div className="passenger-list">
         {passengers.map((passenger) => (
           <div
@@ -50,6 +53,15 @@ const SelectPassenger = () => {
             onClick={() => handleSelectPassenger(passenger.id)}
           >
             {passenger.name}
+            <button
+              className="remove-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemovePassenger(passenger.id);
+              }}
+            >
+              ✕
+            </button>
           </div>
         ))}
       </div>

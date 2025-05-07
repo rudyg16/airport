@@ -1,60 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import "./Baggage.css";
+import { useNavigate } from "react-router-dom";
 
 const Baggage = () => {
   const navigate = useNavigate();
-  const [passenger, setPassenger] = useState(null);
-  const [bags, setBags] = useState([{ id: 1, weight: "" }]);
+  const passenger = JSON.parse(localStorage.getItem("selectedPassenger")) || { name: "Passenger" };
 
-  useEffect(() => {
-    const storedPassenger = localStorage.getItem("selectedPassenger");
-    if (storedPassenger) {
-      setPassenger(JSON.parse(storedPassenger));
-    }
-  }, []);
+  const [baggageList, setBaggageList] = useState([]);
+  const [weight, setWeight] = useState("");
+  const [type, setType] = useState("Carry-on");
 
-  const handleWeightChange = (id, value) => {
-    setBags((prev) =>
-      prev.map((bag) =>
-        bag.id === id ? { ...bag, weight: value } : bag
-      )
-    );
+  const handleAddBag = () => {
+    if (!weight || isNaN(weight)) return;
+    const newBag = { type, weight };
+    setBaggageList([...baggageList, newBag]);
+    setWeight("");
+    setType("Carry-on");
   };
 
-  const addBag = () => {
-    setBags((prev) => [...prev, { id: prev.length + 1, weight: "" }]);
+  const handleRemoveBag = (index) => {
+    const updated = baggageList.filter((_, i) => i !== index);
+    setBaggageList(updated);
   };
 
-  const handleSubmit = () => {
-    const filledBags = bags.filter((bag) => bag.weight.trim() !== "");
-    localStorage.setItem("baggageInfo", JSON.stringify(filledBags));
+  const handleContinue = () => {
+    localStorage.setItem("baggageInfo", JSON.stringify(baggageList));
     navigate("/confirmation");
   };
 
   return (
     <div className="baggage-container">
       <h2>Baggage Information</h2>
-      {passenger && (
-        <p className="passenger-label">
-          Adding bags for: <strong>{passenger.name}</strong>
-        </p>
-      )}
-      {bags.map((bag) => (
-        <div className="baggage-row" key={bag.id}>
-          <label>Bag {bag.id} Weight (lbs):</label>
-          <input
-            type="number"
-            value={bag.weight}
-            onChange={(e) => handleWeightChange(bag.id, e.target.value)}
-            min="0"
-          />
+      <p className="subheading">Adding bags for: <strong>{passenger.name}</strong></p>
+
+      <div className="baggage-form">
+        <label>Bag {baggageList.length + 1} Weight (lbs):</label>
+        <input
+          type="number"
+          placeholder="Enter weight"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+        />
+
+        <label>Bag Type:</label>
+        <select value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="Carry-on">Carry-on</option>
+          <option value="Checked">Checked</option>
+          <option value="Oversized">Oversized</option>
+        </select>
+
+        <button className="add-btn" onClick={handleAddBag}>+ Add Another Bag</button>
+      </div>
+
+      {baggageList.length > 0 && (
+        <div className="bag-list">
+          {baggageList.map((bag, index) => (
+            <div key={index} className="bag-card">
+              <span>{bag.type} – {bag.weight} lbs</span>
+              <button onClick={() => handleRemoveBag(index)}>✕</button>
+            </div>
+          ))}
         </div>
-      ))}
-      <button className="add-bag-btn" onClick={addBag}>
-        + Add Another Bag
-      </button>
-      <button className="submit-baggage-btn" onClick={handleSubmit}>
+      )}
+
+      <button className="continue-btn" onClick={handleContinue}>
         Continue to Confirmation
       </button>
     </div>

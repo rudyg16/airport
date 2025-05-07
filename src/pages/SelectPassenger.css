@@ -28,6 +28,9 @@
     cursor: pointer;
     transition: 0.3s;
     background: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .passenger-card:hover {
@@ -38,6 +41,14 @@
   .passenger-card.selected {
     border-color: #0077ff;
     background: #d8ecff;
+  }
+  
+  .remove-btn {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    color: #c00;
+    cursor: pointer;
   }
   
   .add-passenger-form {
