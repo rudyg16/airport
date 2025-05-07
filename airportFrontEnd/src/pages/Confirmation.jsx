@@ -6,7 +6,7 @@ const Confirmation = () => {
   const [passenger, setPassenger] = useState(null);
   const [baggage, setBaggage] = useState([]);
   const [ticket, setTicket] = useState(null);
-
+  
   useEffect(() => {
     const storedFlight = JSON.parse(localStorage.getItem("selectedFlight") || "null");
     const storedPassenger = JSON.parse(localStorage.getItem("selectedPassenger") || "null");

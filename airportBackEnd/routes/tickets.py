@@ -130,7 +130,7 @@ def book_ticket(request: Request):
         cursor.close()
         conn.close()
 
-        
+
 @router.get("/by-user/{user_id}")
 def get_tickets_by_user(user_id: int):
     conn = get_db_connection()
@@ -145,7 +145,7 @@ def get_tickets_by_user(user_id: int):
                 f.arrival_city,
                 f.depart_time,
                 f.arrival_time,
-                al.airline_name,           -- grab it from airline
+                al.airline_name,           
                 p.pass_fname,
                 p.pass_lname,
                 l.weight,
