@@ -111,7 +111,8 @@ def seed_passenger(cursor):
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (last_name, first_name, passportID, stateID, email, user_id))
-            
+def seed_flights(cursor):
+    for 
 
 
 
@@ -160,9 +161,10 @@ def main():
         
         seed_users(cursor)
         connection.commit()
-        '''
+
         seed_passenger(cursor)
         connection.commit()
+        '''
 
         # View data (optional)
         #print_table('terminal',cursor)
