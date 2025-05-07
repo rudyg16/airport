@@ -129,6 +129,8 @@ def book_ticket(request: Request):
     finally:
         cursor.close()
         conn.close()
+
+        
 @router.get("/by-user/{user_id}")
 def get_tickets_by_user(user_id: int):
     conn = get_db_connection()

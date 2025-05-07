@@ -56,7 +56,7 @@ CREATE TABLE passenger (
     pass_passportID CHAR(9),
     state_ID VARCHAR(12),
     pass_email VARCHAR(60),
-    user_id INT,
+    user_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
@@ -84,6 +84,7 @@ CREATE TABLE ticket (
 );
 CREATE TABLE luggage (
     luggage_id INT AUTO_INCREMENT PRIMARY KEY,
+    weight DEC(5,2) NOT NULL,
     pass_id INT NOT NULL,
     ticket_id INT NOT NULL weight DECIMAL(5, 2) NOT NULL,
     bagtype VARCHAR(20) NOT NULL,
