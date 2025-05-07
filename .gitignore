@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# === Backend ===
+airportBackEnd/venv/
+airportBackEnd/__pycache__/
+airportBackEnd/.mypy_cache/
+airportBackEnd/.pytest_cache/
+
+# === Global ===
+*.env
+*.log
+.DS_Store
