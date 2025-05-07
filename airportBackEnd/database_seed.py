@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import random
 import string
+from datetime import datetime,timedelta
 
 # Load environment variables
 load_dotenv()
@@ -31,6 +32,15 @@ group_members = [
     ('Rodolfo','Gonzalez'),
     ('Yousuf','Ismail'),
     ('Yoel','Kidane')
+]
+cities = [#city,country and hours flight takes 
+    ('Milan','Italy',12),
+    ('Paris','France',10),
+    ('Munich','Germany',13),
+    ('New York','United States',4),
+    ('Los Angeles','United States',3),
+    ('Chicago','United States',2)
+
 ]
 
 
@@ -111,8 +121,39 @@ def seed_passenger(cursor):
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             cursor.execute(sql, (last_name, first_name, passportID, stateID, email, user_id))
+
 def seed_flights(cursor):
-    for 
+    nextday =datetime.now()
+    base_depart_time=nextday+timedelta(hours=24)
+    
+    cursor.execute("SELECT airplane_id FROM airplane ORDER BY airplane_id")
+    airplane_ids = [row['airplane_id'] for row in cursor.fetchall()]
+    total_airplanes = len(airplane_ids)
+    airplane_index = 0  # to cycle through
+
+    for i in range(3):#terminal letter ABC
+        terminal = chr(ord('A') + i)
+        depart_time = base_depart_time
+        for gate in range(1, 7):#gates for each terminal
+            arrival_city,arrival_country,flight_hours =random.choice(cities)
+
+            depart_time+=timedelta(hours=3)
+            arrival_time= depart_time + timedelta(hours=flight_hours)
+
+            current_airplane_id = airplane_ids[airplane_index]
+            airplane_index = (airplane_index + 1) % total_airplanes
+
+            depart_city='Dallas'
+            depart_country="United States"
+            sql = """
+                INSERT INTO flight 
+                    (depart_time, arrival_time, gate_num, terminal_letter, arrival_city, depart_city,arrival_country,depart_country,airplane_id)
+                VALUES (%s, %s, %s, %s, %s, %s,%s,%s,%s)
+            """
+            cursor.execute(sql, (depart_time,arrival_time,gate,terminal,arrival_city,depart_city,arrival_country,depart_country,current_airplane_id))
+            
+
+            
 
 
 
@@ -164,7 +205,11 @@ def main():
 
         seed_passenger(cursor)
         connection.commit()
+        
+        seed_flights(cursor)
+        connection.commit()
         '''
+        
 
         # View data (optional)
         #print_table('terminal',cursor)
@@ -172,8 +217,9 @@ def main():
         #print_table('model',cursor)
         #print_table('airplane',cursor)
         #print_table('employee',cursor)
-        #print_table('users',cursor)
+        print_table('users',cursor)
         print_table('passenger',cursor)
+        #print_table('flight',cursor)
 
 
 

@@ -1,15 +1,41 @@
-import React, { useState } from 'react'
+import React from "react";
+import { Link } from "react-router-dom";
+import "./Home.css";
 
-import plane from "../assets/clouds.jpg"
+const Home = () => {
+  return (
+    <div className="home-container">
+      <h2>Welcome to SkyBook</h2>
+      <p>Easily search, book, and manage your flights with a few clicks.</p>
 
-export default function Home(){
-    return(
-        <div className="min-h-screen flex  justify-center ">
-            
-                <img src={plane} className="max-h-96"></img>
-                <div>
-                    
-                </div>
-        </div>
-    );
-}
+      <div className="home-options">
+        <Link to="/search" className="home-card">
+          <h3>🔍 Search Flights</h3>
+          <p>Find flights by city, date, and airline, and book in seconds.</p>
+        </Link>
+
+        <Link to="/select-passenger" className="home-card">
+          <h3>🧍‍♂️ Passengers</h3>
+          <p>Add and manage passengers for your bookings.</p>
+        </Link>
+
+        <Link to="/baggage" className="home-card">
+          <h3>🧳 Baggage</h3>
+          <p>Include carry-on and checked baggage details for each trip.</p>
+        </Link>
+
+        <Link to="/confirmation" className="home-card">
+          <h3>✅ Confirm</h3>
+          <p>Review all flight, passenger, and baggage details before finalizing.</p>
+        </Link>
+
+        <Link to="/my-flights" className="home-card">
+          <h3>✈️ My Flights</h3>
+          <p>View your upcoming booked flights and travel details.</p>
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default Home;

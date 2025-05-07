@@ -73,40 +73,86 @@ CREATE TABLE passenger (
 
 CREATE TABLE flight (
     flight_num INT AUTO_INCREMENT PRIMARY KEY,
+
     depart_time DATETIME NOT NULL,
     arrival_time DATETIME NOT NULL,
-    capacity INT NOT NULL,
-    state_ID VARCHAR(12) NOT NULL,
-    pass_email VARCHAR(60) NOT NULL,
-    airline_name VARCHAR(50) NOT NULL,
+
+    airplane_id INT NOT NULL,
     gate_num INT NOT NULL,
     terminal_letter CHAR(1) NOT NULL,
+
     arrival_city VARCHAR(50),
     depart_city VARCHAR(50),
     arrival_country VARCHAR(50),
     depart_country VARCHAR(50),
-    FOREIGN KEY (airline_name) REFERENCES airline (airline_name),
+
     FOREIGN KEY (gate_num, terminal_letter) REFERENCES gate (gate_num, terminal_letter)
+    FOREIGN KEY (airplane_id) REFERENCES airplane(airplane_id)
 );
+TRUNCATE TABLE flight;
+SELECT * FROM flight;
+ALTER TABLE crew DROP FOREIGN KEY crew_ibfk_1;
+ALTER TABLE crew
+ADD CONSTRAINT crew_ibfk_1 FOREIGN KEY (flight_num) REFERENCES flight (flight_num);
+ALTER TABLE ticket DROP FOREIGN KEY ticket_ibfk_2;
+ALTER TABLE ticket
+ADD CONSTRAINT ticket_ibfk_2 FOREIGN KEY (flight_num) REFERENCES flight (flight_num);
+ALTER TABLE luggage DROP FOREIGN KEY luggage_ibfk_2;
+
+ALTER TABLE luggage
+ADD CONSTRAINT luggage_ibfk_2 FOREIGN KEY (flight_num) REFERENCES flight (flight_num);
+
+SELECT * FROM users JOIN passenger ON users.user_id = passenger.user_id;
+
+ALTER TABLE flight DROP FOREIGN KEY flight_ibfk_1;
+ALTER TABLE flight DROP COLUMN capacity;
+ALTER TABLE flight DROP COLUMN airline_name;
+ALTER TABLE flight ADD COLUMN airplane_id INT NOT NULL;
+ALTER TABLE flight 
+ADD CONSTRAINT fk_flight_airplane
+FOREIGN KEY(airplane_id)
+REFERENCES airplane(airplane_id);
+
+
+
 
 /* Luggage -- belongs to a passenger per specific flight */
 CREATE TABLE luggage (
     luggage_id INT AUTO_INCREMENT PRIMARY KEY,
     pass_id INT NOT NULL,
-    flight_num INT NOT NULL,
+    ticket_id INT NOT NULL
+    weight DECIMAL(5,2) NOT NULL,
+    bagtype VARCHAR(20) NOT NULL,
     FOREIGN KEY (pass_id) REFERENCES passenger (pass_id),
-    FOREIGN KEY (flight_num) REFERENCES flight (flight_num)
+    FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)
 );
+ALTER TABLE luggage
+ADD CONSTRAINT luggage_ibfk_4 FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id);
 
+TRUNCATE TABLE luggage;
+ALTER TABLE luggage ADD COLUMN  weight DECIMAL(5,2);
+ALTER TABLE luggage ADD COLUMN bagtype VARCHAR(20);
+ALTER TABLE luggage DROP COLUMN ticket_id;
+
+ALTER TABLE luggage ADD COLUMN ticket_id INT NOT NULL;
+ALTER
+TABLE luggage
+ADD CONSTRAINT luggage_ibfk_3 FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id);
+ALTER TABLE luggage DROP FOREIGN KEY luggage_ibfk_3;
+#ALTER TABLE luggage DROP COLUMN flight_num;
 /* Tickets */
 CREATE TABLE ticket (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
     seat_num SMALLINT NOT NULL,
     flight_num INT NOT NULL,
+    pass_id INT NOT NULL,
     UNIQUE (flight_num, seat_num),
-    FOREIGN KEY (flight_num) REFERENCES flight (flight_num)
+    FOREIGN KEY (flight_num) REFERENCES flight (flight_num),
+    FOREIGN KEY (pass_id) REFERENCES passenger (pass_id)
 );
-
+TRUNCATE TABLE ticket;
+ALTER TABLE ticket ADD CONSTRAINT ticket_ibfk_3 FOREIGN KEY(pass_id) REFERENCES passenger(pass_id);
+ALTER TABLE ticket ADD COLUMN pass_id INT NOT NULL;
 /* Flight‑crew assignment for M-to-M relationship */
 CREATE TABLE crew (
     flight_num INT NOT NULL,
@@ -115,3 +161,4 @@ CREATE TABLE crew (
     FOREIGN KEY (flight_num) REFERENCES flight (flight_num),
     FOREIGN KEY (employ_id) REFERENCES employee (employ_id)
 );
+

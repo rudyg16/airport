@@ -12,6 +12,16 @@ from routes.users import router as users_router
 
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React/Vite dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Register routes
 app.include_router(flights_router, prefix="/flights", tags=["Flights"])

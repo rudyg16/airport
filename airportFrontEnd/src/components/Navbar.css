@@ -1,0 +1,14 @@
+nav {
+    background-color: #f1f1f1;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nav-links a {
+    margin-right: 1.5rem;
+    color: #333;
+    font-weight: 500;
+  }
+  

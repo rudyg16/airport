@@ -38,31 +38,38 @@ def search_flights(
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    query = "SELECT * FROM flight WHERE 1=1"
+    query = '''SELECT flight.*, model.capacity, airline.airline_name
+    FROM flight 
+    JOIN airplane ON flight.airplane_id = airplane.airplane_id
+    JOIN model ON airplane.model_name = model.model_name 
+    JOIN airline ON airplane.airline_name = airline.airline_name
+    WHERE 1=1
+    '''
     params = []
 
     if arrival_city:
-        query += " AND arrival_city LIKE %s"
+        query += " AND flight.arrival_city LIKE %s"
         params.append(f"%{arrival_city}%")
     if depart_city:
-        query += " AND depart_city LIKE %s"
+        query += " AND flight.depart_city LIKE %s"
         params.append(f"%{depart_city}%")
     if airline_name:
-        query += " AND airline_name = %s"
+        query += " AND airline.airline_name = %s"
         params.append(airline_name)
     if date:
-        query += " AND DATE(depart_time) = %s"
+        query += " AND DATE(flight.depart_time) = %s"
         params.append(date)
     if min_depart_time:
-        query += " AND TIME(depart_time) >= %s"
+        query += " AND TIME(flight.depart_time) >= %s"
         params.append(min_depart_time)
 
     cursor.execute(query, tuple(params))
     flights = cursor.fetchall()
+
     for f in flights:
         for k in ["depart_time", "arrival_time"]:
-            if f.get(k):
-                f[k] = str(f[k])
+            if f.get(k) and isinstance(f[k], datetime):
+                f[k] = f[k].isoformat()
 
     cursor.close()
     conn.close()
@@ -121,3 +128,55 @@ def create_flight(depart_time: str, arrival_time: str, capacity: int, state_ID: 
         cursor.close()
         conn.close()
     return {"message": "Flight created successfully"}
+
+@router.get("/by-user/{user_id}")
+def get_tickets_by_user(user_id: int):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT t.ticket_id, t.seat_num, t.flight_num, f.depart_city, f.arrival_city,
+                   f.depart_time, f.arrival_time, f.airline_name, p.pass_fname, p.pass_lname,
+                   l.weight, l.bagtype
+            FROM ticket t
+            JOIN passenger p ON t.pass_id = p.pass_id
+            JOIN flight f ON f.flight_num = t.flight_num
+            LEFT JOIN luggage l ON l.ticket_id = t.ticket_id
+            WHERE p.user_id = %s
+        """, (user_id,))
+        rows = cursor.fetchall()
+
+        # Group by ticket
+        grouped = {}
+        for row in rows:
+            tid = row["ticket_id"]
+            if tid not in grouped:
+                grouped[tid] = {
+                    "ticket_id": tid,
+                    "seat_num": row["seat_num"],
+                    "flight": {
+                        "flight_num": row["flight_num"],
+                        "departureCity": row["depart_city"],
+                        "arrivalCity": row["arrival_city"],
+                        "depart_time": str(row["depart_time"]),
+                        "arrival_time": str(row["arrival_time"]),
+                        "airline": row["airline_name"],
+                    },
+                    "passenger": {
+                        "name": f"{row['pass_fname']} {row['pass_lname']}"
+                    },
+                    "baggage": [],
+                }
+            if row["weight"] is not None:
+                grouped[tid]["baggage"].append({
+                    "type": row["bagtype"],
+                    "weight": row["weight"],
+                })
+
+        return list(grouped.values())
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()

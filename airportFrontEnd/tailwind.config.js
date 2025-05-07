@@ -2,17 +2,19 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}", // Make sure all your React files are included
   ],
   theme: {
     extend: {
-
-      colors:{//Predefine colors here 
-        airplaneBlue: "#3484FD", 
-        greenBlue:"#00CEC8",
-      }
+      fontFamily: {
+        sans: ['Poppins', 'sans-serif'], // <== this sets your app-wide font
+      },
+      colors: {
+        // Optional custom colors
+        airplaneBlue: "#3484FD",
+        greenBlue: "#00ECC8",
+      },
     },
   },
   plugins: [],
 }
-
